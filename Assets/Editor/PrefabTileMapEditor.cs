@@ -4,6 +4,29 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using System.Xml;
+using System.Xml.Serialization;
+[System.Serializable]
+public class PrefabTileMapData
+{
+    public string savePath;
+    public Vector3 tileSize ;
+    public int width = 10;
+    public int length = 10;
+    public List<int> brushList;
+    public int[] map;
+    public int[] mapHeight;
+    public List<List<string>> objMap;
+    public int[] mapRotation;
+}
+[System.Serializable]
+public class pepole
+{
+    int i = 1;
+    public pepole()
+    {
+        i = 2;
+    }
+}
 [CustomEditor(typeof(PrefabTileMap))]
 public class PrefabTileMapEditor : Editor
 {
@@ -24,9 +47,10 @@ public class PrefabTileMapEditor : Editor
     private void OnEnable()
     {
         map = (PrefabTileMap)target;
-        toolsListGUI = new GUIContent[2];
-        toolsListGUI[0] = new GUIContent("笔刷绘制");
-        toolsListGUI[1] = new GUIContent("高度绘制");
+        toolsListGUI = new GUIContent[3];
+        toolsListGUI[0] = new GUIContent("绘制");
+        toolsListGUI[1] = new GUIContent("高度");
+        toolsListGUI[2] = new GUIContent("旋转");
         heightBrushListGUI = new GUIContent[2];
         heightBrushListGUI[0] = new GUIContent("提高");
         heightBrushListGUI[1] = new GUIContent("降低");
@@ -40,7 +64,7 @@ public class PrefabTileMapEditor : Editor
     private void OnSceneGUI()
     {
         
-         //屏蔽镜头控制
+        //屏蔽镜头控制
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
         
        
@@ -58,64 +82,115 @@ public class PrefabTileMapEditor : Editor
     
     private Vector3 LookPosition()
     {
-        return map.transform.position + new Vector3(map.Width * map.tileSize.x, 0, map.Length * map.tileSize.z) / 2 + lookOffset;
+        return map.transform.position + new Vector3(map.width * map.tileSize.x, 0, map.length * map.tileSize.z) / 2 + lookOffset;
     }
     private Vector3 GetPosition()
     {
       
         var CamOffset = (sceneView.camera.transform.position - map.transform.position);
-        var z = map.transform.position.z + map.Length / 2;
+        var z = map.transform.position.z + map.length / 2;
         var position = new Vector3(Event.current.mousePosition.x, Event.current.mousePosition.y, CamOffset.y);
         var pos= sceneView.camera.ScreenToWorldPoint(position);
-        return new Vector3(pos.x,0, z-( pos.z- z)+2*CamOffset.z - map.Length);//new Vector3( (int)(pos.x), 0,(int)(CamOffset.z*2 -pos.z))+map.tileSize/2;
+        return new Vector3(pos.x,0, z-( pos.z- z)+2*CamOffset.z - map.length);//new Vector3( (int)(pos.x), 0,(int)(CamOffset.z*2 -pos.z))+map.tileSize/2;
     }
    
     private void Save()
     {
-        var xml= GetXml();
-        var path= FileManager.SaveSelectPath(xml.InnerXml, "保存地形数据","map","xml",map.savePath==""?"Assets":map.savePath);
+        var data = GetData();
+        var xml = FileManager.Serialize(data);
+        var path= FileManager.SaveSelectPath(xml, "保存地形数据","map","xml",map.savePath==""?"Assets":map.savePath);
         if (System.IO.File.Exists(path))
         {
             map.savePath = path;
         }
-       
+
     }
-    private XmlDocument GetXml()
+    //private XmlDocument GetXml()
+    //{
+    //    XmlDocument xml = new XmlDocument();
+    //    xml.AppendChild(xml.CreateXmlDeclaration("1.0", "utf-8", "yes"));
+    //    XmlElement root = xml.CreateElement("prefabTileMap");
+    //    {
+    //        var mapSetting = xml.CreateElement("mapSetting");
+    //        root.AppendChild(mapSetting);
+    //        var mapSize = xml.CreateElement("mapSize");
+    //        mapSetting.AppendChild(mapSize);
+    //        mapSize.SetAttribute("width", map.width.ToString());
+    //        mapSize.SetAttribute("length", map.length.ToString());
+    //        var tileSize = xml.CreateElement("tileSize");
+    //        mapSetting.AppendChild(tileSize);
+    //        tileSize.SetAttribute("x", map.tileSize.x.ToString());
+    //        tileSize.SetAttribute("y", map.tileSize.y.ToString());
+    //        tileSize.SetAttribute("z", map.tileSize.z.ToString());
+    //        var brushList = xml.CreateElement("brushList");
+    //        mapSetting.AppendChild(brushList);
+    //        brushList.SetAttribute("count", map.brushList.Count.ToString());
+    //        for (int i = 0; i < map.brushList.Count; i++)
+    //        {
+    //            xml.CreateElement("brush_" + i);
+    //        }
+    //        map.brushList[0].GetInstanceID();
+    //    }
+    //    xml.AppendChild(root);
+    //    {//游戏对象引用
+    //        var objMap = xml.CreateElement("objMap");
+    //        root.AppendChild(objMap);
+    //        objMap.SetAttribute("count", map.objMap.Length.ToString());
+    //        for (int i = 0; i < map.objMap.Length; i++)
+    //        {
+    //            var objList = xml.CreateElement("objList_" + i);
+    //            objMap.AppendChild(objList);
+    //            objList.SetAttribute("count", map.objMap[i].Count.ToString());
+    //            for (int j = 0; j < map.objMap[i].Count; j++)
+    //            {
+    //                var objId = xml.CreateElement("objId_" + j);
+    //                objList.AppendChild(objId);
+    //                if (map.objMap[i][j] != null)
+    //                {
+    //                    objId.InnerText = map.objMap[i][j].name;
+    //                }
+    //                else
+    //                {
+    //                    objId.InnerText = "";
+    //                }
+    //            }
+    //        }
+    //    }
+    //    return xml;
+    //}
+    private PrefabTileMapData GetData()
     {
-        XmlDocument xml = new XmlDocument();
-        xml.AppendChild(xml.CreateXmlDeclaration("1.0", "utf-8", "yes"));
-        XmlElement root = xml.CreateElement("prefabTileMap");
-        xml.AppendChild(root);
-        var objMap = xml.CreateElement("objMap");
-        root.AppendChild(objMap);
-        objMap.SetAttribute("count", map.objMap.Length.ToString());
+        var data = new PrefabTileMapData()
+        {
+            savePath = map.savePath,
+            tileSize=map.tileSize,
+            width =map.width,
+            length = map.length,
+            brushList=new List<int>(),
+            map=map.map,
+            mapHeight=map.mapHeight,
+            objMap=new List<List<string>>(),
+            mapRotation=map.mapRotation,
+        };
+        for (int i = 0; i < map.brushList.Count; i++)
+        {
+            data.brushList.Add(map.brushList[i].GetInstanceID());
+        }
         for (int i = 0; i < map.objMap.Length; i++)
         {
-            var objList = xml.CreateElement("objList_" + i);
-            objMap.AppendChild(objList);
-            objList.SetAttribute("count", map.objMap[i].Count.ToString());
-            for (int j = 0; j < map.objMap[i].Count; j++)
+            data.objMap.Add( new List<string>());
+            for (int j = 0; j <map.objMap[i].Count; j++)
             {
-                var objId = xml.CreateElement("objId_" + j);
-                objList.AppendChild(objId);
-                if (map.objMap[i][j] != null)
-                {
-                    objId.InnerText = map.objMap[i][j].name;
-                }
-                else
-                {
-                    objId.InnerText = "";
-                }
+                data.objMap[i].Add(map.objMap[i][j].name);
             }
         }
-        return xml;
+        return data;
     }
-
     private void AutoSave()
     {
-        var xml = GetXml();
+        var xml = FileManager.Serialize(GetData());
         var path = autoSavePath + "/" + map.GetInstanceID() + "_MapAutoSave.xml";
-        map.savePath = FileManager.Save(map.savePath == "" ? path : map.savePath, xml.InnerXml);
+        map.savePath = FileManager.Save(map.savePath == "" ? path : map.savePath, xml);
     }
 
     private void LoadObjMap()
@@ -128,22 +203,22 @@ public class PrefabTileMapEditor : Editor
         {
             return;
         }
-        XmlDocument xml = new XmlDocument();
-        xml.LoadXml(FileManager.Load(map.savePath));
-        var root = xml["prefabTileMap"];
-        var objMap = root["objMap"];
-        var mapCount = int.Parse(objMap.Attributes["count"].InnerText);
-        map.objMap = new List<GameObject>[mapCount];
+    
+        var data= FileManager.Deserialize<PrefabTileMapData>(FileManager.Load(map.savePath));
+        LoadObjMap(data);
+
+    }
+    public void LoadObjMap(PrefabTileMapData data)
+    {
+        map.objMap = new List<GameObject>[data.objMap.Count];
         for (int i = 0; i < map.objMap.Length; i++)
         {
             map.objMap[i] = new List<GameObject>();
-            var mapList = objMap.SelectSingleNode("objList_"+i);
-            
-            var listCount =int.Parse( mapList.Attributes["count"].InnerText);
-            for (int j = 0; j < listCount; j++)
+            for (int j = 0; j < data.objMap[i].Count; j++)
             {
-                var objId = mapList.SelectSingleNode("objId_" + j).InnerText;
-                if (objId != null) {
+                var objId = data.objMap[i][j];
+                if (objId != null)
+                {
                     if (map.transform.Find(objId) == null)
                     {
                         Debug.LogError("空物体");
@@ -152,27 +227,55 @@ public class PrefabTileMapEditor : Editor
                     {
                         map.objMap[i].Add(map.transform.Find(objId).gameObject);
                     }
-                   
-                 
                 }
-                
             }
         }
-      //  Debug.LogError("地图引用加载成功");
-       
     }
     private void Load()
     {
-        XmlDocument xml = new XmlDocument();
-        var data = FileManager.LoadSelectPath("读取地形数据", "xml", map.savePath == "" ? "Assets" : map.savePath);
-        if (data == "") return;
-        xml.LoadXml(data);
+      
+        var xml = FileManager.LoadSelectPath("读取地形数据", "xml", map.savePath == "" ? "Assets" : map.savePath);
+        if (xml == "") return;
+        var data = FileManager.Deserialize<PrefabTileMapData>(xml);
+        map.ResetMap(data.width, data.length);
+        map.brushList.Clear();
+        foreach (var b in data.brushList)
+        {
+            map.brushList.Add( EditorUtility.InstanceIDToObject(b)as PrefabTile);
+        }
+       
+        
+        for (int i = 0; i < data.map.Length; i++)
+        {
+            map.Draw(i, data.map[i], false, true);
+            map.Rotate(i, data.mapRotation[i], false, true);
+            map.ChangeHeight(i, data.mapHeight[i], false, true);
+        }
+        FreshBrushListGUI();
+    }
+    public bool KeyDown(KeyCode key)
+    {
+        return (Event.current.isKey && Event.current.type == EventType.KeyDown && Event.current.keyCode == key)
+     ;
     }
     private void MouseCtr()
     {
+      
         if (!editorMode) return;
         Event e = Event.current;
+        if (KeyDown(KeyCode.Z))
+        {
+            map.Undo();
+        }
+        if (KeyDown(KeyCode.Y))
+        {
+            map.Redo();
+        }
 
+        if (Event.current.isKey && Event.current.type == EventType.KeyDown && Event.current.keyCode==KeyCode.Z)
+        {
+            map.Undo();
+        }
         //Handles.color = Color.red;
         //Handles.DrawWireCube(GetPosition(), map.tileSize);
 
@@ -238,13 +341,29 @@ public class PrefabTileMapEditor : Editor
         switch (map.toolIndex)
         {
             case 0:
-                map.Draw(pos, map.tileBrushIndex);
+                if (Event.current.shift)
+                {
+                    map.Draw(pos, PrefabTileMap.spaceIndex);
+                }
+                else
+                {
+                    map.Draw(pos, map.tileBrushIndex);
+                }
                 break;
             case 1:
               
                 switch (map.heightBrushIndex)
                 {
-                    case 0: map.ChangeHeight(pos,1); break;
+                    case 0: 
+                        if (Event.current.shift)
+                        {
+                            map.ChangeHeight(pos, -1);
+                        }
+                        else
+                        {
+                            map.ChangeHeight(pos, 1);
+                        }
+                        break;
                     case 1: map.ChangeHeight(pos, -1); break;
                     default:
                         Debug.LogError("不存在的高度笔刷");
@@ -252,12 +371,16 @@ public class PrefabTileMapEditor : Editor
                 }
                 
                 break;
+            case 2:
+                map.Rotate(map.Index( pos), 1);
+                break;
             default:
                 break;
         }
     }
     public override void OnInspectorGUI()
     {
+     
         EditorGUI.BeginChangeCheck();
         string text = (!editorMode ? "打 开" : "关 闭") + " 编 辑 模 式 ";
         editorMode = GUILayout.Toggle(editorMode, text, EditorStyles.miniButton, GUILayout.Height(30));
@@ -298,14 +421,14 @@ public class PrefabTileMapEditor : Editor
         }
         if (GUILayout.Button("加载文件", EditorStyles.miniButtonRight))
         {
-            //();
+            Load();
         }
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("宽 ["+map.Width.ToString()+"]",GUILayout.MaxWidth(60));
+        EditorGUILayout.LabelField("宽 ["+map.width.ToString()+"]",GUILayout.MaxWidth(60));
         tWidth =EditorGUILayout.IntField(tWidth);
-        EditorGUILayout.LabelField("高 [" + map.Width.ToString() + "]", GUILayout.MaxWidth(60));
+        EditorGUILayout.LabelField("长 [" + map.width.ToString() + "]", GUILayout.MaxWidth(60));
         tHeight = EditorGUILayout.IntField(tHeight);
         if (GUILayout.Button("更 改 地 图 大 小", EditorStyles.miniButton,GUILayout.MinWidth(100)))
         {
@@ -322,7 +445,7 @@ public class PrefabTileMapEditor : Editor
             if (EditorUtility.DisplayDialog("确定更改么", "更改网格大小需要对应大小的笔刷", "更改", "取消"))
             {
                 map.tileSize = tTileSize;
-                map.ResetMap(map.Width, map.Length);
+                map.ResetMap(map.width, map.length);
 
             }
         }
@@ -336,12 +459,13 @@ public class PrefabTileMapEditor : Editor
         }
         GUILayout.BeginHorizontal();
         GUI.enabled = map.CanUndo;
-        if (GUILayout.Button("撤 销", EditorStyles.miniButtonLeft))
+    
+        if (GUILayout.Button("撤 销 [Z]", EditorStyles.miniButtonLeft))
         {
             map.Undo();
         }
         GUI.enabled = map.CanRedo;
-        if (GUILayout.Button("重 做", EditorStyles.miniButtonRight))
+        if (GUILayout.Button("重 做 [Y]", EditorStyles.miniButtonRight))
         {
             map.Redo();
         }
@@ -513,22 +637,22 @@ public class PrefabTileMapEditor : Editor
     {
         var position = map.transform.position;
         Handles.color = Color.blue;
-        Handles.DrawLine(new Vector3(position.x,0, position.z), new Vector3(map.Width*map.tileSize.x + position.x,0, position.z));
+        Handles.DrawLine(new Vector3(position.x,0, position.z), new Vector3(map.width*map.tileSize.x + position.x,0, position.z));
        
-        Handles.DrawLine(new Vector3(position.x, 0, position.z), new Vector3(position.x,0, map.Length * map.tileSize.z + position.z));
-        Handles.DrawLine(new Vector3(map.Width * map.tileSize.x + position.x, 0, position.z), new Vector3(map.Width * map.tileSize.x + position.x, 0, map.Length * map.tileSize.z + position.z));
-        Handles.DrawLine(new Vector3(position.x, 0, map.Length * map.tileSize.z + position.z), new Vector3(map.Width * map.tileSize.x + position.x, 0, map.Length * map.tileSize.z + position.z));
+        Handles.DrawLine(new Vector3(position.x, 0, position.z), new Vector3(position.x,0, map.length * map.tileSize.z + position.z));
+        Handles.DrawLine(new Vector3(map.width * map.tileSize.x + position.x, 0, position.z), new Vector3(map.width * map.tileSize.x + position.x, 0, map.length * map.tileSize.z + position.z));
+        Handles.DrawLine(new Vector3(position.x, 0, map.length * map.tileSize.z + position.z), new Vector3(map.width * map.tileSize.x + position.x, 0, map.length * map.tileSize.z + position.z));
 
         if (!editorMode) return;
         Handles.color = Color.white;
         Vector3 start = map.transform.position;
-        for (float i = 1; i < map.Width; i++)
+        for (float i = 1; i < map.width; i++)
         {
-            Handles.DrawLine(new Vector3(i * map.tileSize.x + start.x,0, start.z), new Vector3(i * map.tileSize.x + start.x,0, map.Length * map.tileSize.z + start.z));
+            Handles.DrawLine(new Vector3(i * map.tileSize.x + start.x,0, start.z), new Vector3(i * map.tileSize.x + start.x,0, map.length * map.tileSize.z + start.z));
         }
-        for (float i = 1; i < map.Length; i++)
+        for (float i = 1; i < map.length; i++)
         {
-            Handles.DrawLine(new Vector3( start.x, 0, i * map.tileSize.z + start.z), new Vector3(map.Width * map.tileSize.x + start.x, 0, i * map.tileSize.z + start.z));
+            Handles.DrawLine(new Vector3( start.x, 0, i * map.tileSize.z + start.z), new Vector3(map.width * map.tileSize.x + start.x, 0, i * map.tileSize.z + start.z));
         }
 
 

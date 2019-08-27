@@ -16,6 +16,7 @@ public enum ChangeType
 {
     index,
     height,
+    rotate,
 }
 public class PrefabTileMap : MonoBehaviour
 {
@@ -27,11 +28,11 @@ public class PrefabTileMap : MonoBehaviour
     /// <summary>
     /// 宽度
     /// </summary>
-    public int Width=10;
+    public int width=10;
     /// <summary>
     /// 长度
     /// </summary>
-    public int Length=10;
+    public int length=10;
     /// <summary>
     /// 笔刷索引数
     /// </summary>
@@ -48,6 +49,7 @@ public class PrefabTileMap : MonoBehaviour
     /// 游戏对象记录
     /// </summary>
     public List<GameObject>[] objMap;
+    public int[] mapRotation;
     /// <summary>
     /// 空位置索引数
     /// </summary>
@@ -71,7 +73,7 @@ public class PrefabTileMap : MonoBehaviour
     public int toolIndex = 0;
     public int heightBrushIndex=0;
     public bool is2D=false;
-    public int[] mapRotation;
+    
 
     List<int> changedList = new List<int>();
     public bool AddBrush(PrefabTile newBrush)
@@ -145,7 +147,7 @@ public class PrefabTileMap : MonoBehaviour
         if (map == null)
         {
           //  Debug.Log("map为空自动初始化");
-            map = new int[Width * Length];
+            map = new int[width * length];
             for (int i = 0; i < map.Length; i++)
             {
                 map[i] = spaceIndex;
@@ -154,7 +156,7 @@ public class PrefabTileMap : MonoBehaviour
         if (objMap == null)
         {
          //   Debug.Log("tileMap为空自动初始化");
-            objMap = new List<GameObject>[Width * Length];
+            objMap = new List<GameObject>[width * length];
             for (int i = 0; i < objMap.Length; i++)
             {
                 objMap[i] = new List<GameObject>();
@@ -163,17 +165,22 @@ public class PrefabTileMap : MonoBehaviour
         if (mapHeight == null)
         {
         //    Debug.Log("mapHeight为空自动初始化");
-            mapHeight = new int[Width * Length];
+            mapHeight = new int[width * length];
+        }
+        if (mapRotation == null)
+        {
+            mapRotation = new int[width * length];
         }
     }
     public void ResetMap(int w,int l)
     {
         ClearTile();
-        Width = w;
-        Length = l;
+        width = w;
+        length = l;
         map = null;
         mapHeight = null;
         objMap = null;
+        mapRotation = null;
         InitMap();
         ClearHistory();
     }
@@ -184,9 +191,9 @@ public class PrefabTileMap : MonoBehaviour
     }
     public int Index(int x,int y)
     {
-        if (x >= 0 && x < Width && y >= 0 && y < Length)
+        if (x >= 0 && x < width && y >= 0 && y < length)
         {
-            return x + y * Width;
+            return x + y * width;
         }
         else
         {
@@ -202,7 +209,7 @@ public class PrefabTileMap : MonoBehaviour
         }
         else
         {
-            return transform.position + new Vector3(index % Width*tileSize.x, 0, index / Width*tileSize.z) + new Vector3(tileSize.x/2,-tileSize.y/2,tileSize.z/2)+ Vector3.up * tileSize.y * height;
+            return transform.position + new Vector3(index % width*tileSize.x, 0, index / width*tileSize.z) + new Vector3(tileSize.x/2,-tileSize.y/2,tileSize.z/2)+ Vector3.up * tileSize.y * height;
         }
     }
     public Vector3 Fix(Vector3 pos)
@@ -242,6 +249,10 @@ public class PrefabTileMap : MonoBehaviour
                     case ChangeType.height:
                         ChangeHeight(c.pos, -c.index1, false,true);
                         break;
+                    case ChangeType.rotate:
+                        //Debug.Log(c.pos + " " + -c.index1);
+                        Rotate(c.pos, -c.index1, false, true);
+                        break;
                     default:
                         break;
                 }
@@ -266,6 +277,9 @@ public class PrefabTileMap : MonoBehaviour
                         break;
                     case ChangeType.height:
                         ChangeHeight(c.pos, c.index1, false,true);
+                        break;
+                    case ChangeType.rotate:
+                        Rotate(c.pos, c.index1, false, true);
                         break;
                     default:
                         break;
@@ -373,6 +387,39 @@ public class PrefabTileMap : MonoBehaviour
         tile.hideFlags = HideFlags.HideInHierarchy;
         return tile;
     }
+    public MapChange Rotate(int pos,int roteScale=1,bool addHistory=true,bool ignoreChangedList=false)
+    {
+        MapChange change = null;
+        if (pos > 0 && pos < map.Length && map[pos] != spaceIndex
+           &&(!changedList.Contains(pos)||ignoreChangedList))
+        {
+            if (addHistory)
+            {
+                change = new MapChange()
+                {
+                    type = ChangeType.rotate,
+                    pos = pos,
+                    index1 = roteScale
+                };
+                historyTemp.Add(change);
+            }
+           // Debug.LogError(pos + " " + roteScale);
+            mapRotation[pos] += roteScale;
+            if (objMap[pos] != null)
+            {
+                Quaternion rotation = Quaternion.Euler(0, mapRotation[pos]*90, 0);
+                for (int i = 0; i < objMap[pos].Count; i++)
+                {
+                    objMap[pos][i].gameObject.transform.rotation = rotation;
+                }
+            }
+            if (!ignoreChangedList)
+            {
+                changedList.Add(pos);            }
+            
+        }
+        return change;
+    }
     public MapChange Draw(Vector3 pos, int brushIndex)
     {
         return Draw(Index(pos), brushIndex);
@@ -427,6 +474,7 @@ public class PrefabTileMap : MonoBehaviour
             {
                 changedList.Remove(pos);
                 ChangeHeight(pos, -mapHeight[pos], addHistory,ignoreChangedList);
+                Rotate(pos, -mapRotation[pos], addHistory, ignoreChangedList);
             }
             else
             {

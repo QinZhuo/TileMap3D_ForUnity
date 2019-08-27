@@ -63,19 +63,13 @@
     <Compile Include="Assets\Scripts\FileManager.cs" />
     <Compile Include="Assets\Scripts\PrefabTile.cs" />
     <Compile Include="Assets\Scripts\PrefabTileMap.cs" />
-    <None Include="Assets\Temp\-184124_MapAutoSave.xml" />
-    <None Include="Assets\Temp\-64758_MapAutoSave.xml" />
-    <None Include="Assets\Temp\-111748_MapAutoSave.xml" />
-    <None Include="Assets\Temp\-10074_MapAutoSave.xml" />
-    <None Include="Assets\Temp\-152352_MapAutoSave.xml" />
-    <None Include="Assets\Temp\-159504_MapAutoSave.xml" />
-    <None Include="Assets\Temp\-11926_MapAutoSave.xml" />
-    <None Include="Assets\Temp\-5648_MapAutoSave.xml" />
-    <None Include="Assets\Temp\-1286_MapAutoSave.xml" />
-    <None Include="Assets\Temp\-56830_MapAutoSave.xml" />
-    <None Include="Assets\Temp\-130458_MapAutoSave.xml" />
+    <None Include="Assets\Temp\-255666_MapAutoSave.xml" />
+    <None Include="Assets\map2.xml" />
+    <None Include="Assets\Temp\-248804_MapAutoSave.xml" />
     <None Include="Assets\map.xml" />
-    <None Include="Assets\Temp\-12832_MapAutoSave.xml" />
+    <None Include="Assets\Temp\-254790_MapAutoSave.xml" />
+    <None Include="Assets\Temp\-249786_MapAutoSave.xml" />
+    <None Include="Assets\Temp\-276370_MapAutoSave.xml" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>D:/Project/TileMap3D_ForUnity/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
