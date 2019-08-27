@@ -47,7 +47,7 @@ public class PrefabTileEditor : Editor
         {
             tile.prefab = EditorGUIUtility.GetObjectPickerObject() as GameObject;
             tile.icon = null;
-            Debug.LogError("changePrefab" + tile.prefab);
+        //    Debug.LogError("changePrefab" + tile.prefab);
         }
 
         if (GUI.changed)
