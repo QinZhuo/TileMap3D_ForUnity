@@ -382,7 +382,8 @@ public class PrefabTileMap : MonoBehaviour
             Debug.LogError("不存在的笔刷 " + index);
         }
         
-        var tile = Instantiate(brushList[index].prefab, GetPosition(pos,height), Quaternion.identity, transform);
+        var tile = Instantiate(brushList[index].prefab, GetPosition(pos,height), 
+            Quaternion.Euler(0, mapRotation[pos] * 90, 0), transform);
         tile.name = "tile_" + pos + "_" + height;
         tile.hideFlags = HideFlags.HideInHierarchy;
         return tile;

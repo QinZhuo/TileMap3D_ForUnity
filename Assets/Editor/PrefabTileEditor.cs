@@ -5,19 +5,15 @@ using UnityEditor;
 [CustomEditor(typeof(PrefabTile))]
 public class PrefabTileEditor : Editor
 {
+    [SerializeField]
     private PrefabTile tile;
+    [SerializeField]
+    private string iconPath;
     private void OnEnable()
     {
         tile = (PrefabTile)target;
     }
-    private Texture2D GetIcon()
-    {
-        if (tile.icon == null)
-        {
-            tile.icon = AssetPreview.GetAssetPreview(tile.prefab);
-        }
-        return tile.icon;
-    }
+   
     public override void OnInspectorGUI()
     {
         GUILayout.Space(10);
@@ -35,8 +31,12 @@ public class PrefabTileEditor : Editor
         }
 
 
-        Texture2D texture = tile.IsValid ? GetIcon() : new Texture2D(16, 16);
-        GUI.DrawTexture(GUILayoutUtility.GetLastRect(), texture);
+        Texture2D texture = tile.IsValid ? tile.GetIcon() : new Texture2D(16, 16);
+        if (texture != null)
+        {
+            GUI.DrawTexture(GUILayoutUtility.GetLastRect(), texture);
+        }
+        
         
         if (!tile.IsValid)
         {
@@ -46,7 +46,6 @@ public class PrefabTileEditor : Editor
         if (Event.current.commandName == "ObjectSelectorClosed")
         {
             tile.prefab = EditorGUIUtility.GetObjectPickerObject() as GameObject;
-            tile.icon = null;
         //    Debug.LogError("changePrefab" + tile.prefab);
         }
 

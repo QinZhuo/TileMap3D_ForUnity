@@ -10,8 +10,21 @@ public class FileManager
 
 #if UNITY_EDITOR
 
-
-
+    public static void SavePng(Texture2D tex,string path)
+    {
+        var bytes = tex.EncodeToPNG();
+        if (bytes != null)
+        {
+            File.WriteAllBytes(path, bytes);
+        }
+    }
+    public static Texture2D LoadPng(string path,int width=128,int height=128)
+    {
+        var bytes = File.ReadAllBytes(path);
+        Texture2D tex = new Texture2D(width, height);
+        tex.LoadImage(bytes);
+        return tex;
+    }
     public static string Serialize<T>(T t)
     {
         using (StringWriter sw = new StringWriter())

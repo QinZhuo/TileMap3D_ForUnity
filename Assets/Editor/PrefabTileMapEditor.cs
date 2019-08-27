@@ -12,21 +12,13 @@ public class PrefabTileMapData
     public Vector3 tileSize ;
     public int width = 10;
     public int length = 10;
-    public List<int> brushList;
+    public List<string> brushList;
     public int[] map;
     public int[] mapHeight;
     public List<List<string>> objMap;
     public int[] mapRotation;
 }
-[System.Serializable]
-public class pepole
-{
-    int i = 1;
-    public pepole()
-    {
-        i = 2;
-    }
-}
+
 [CustomEditor(typeof(PrefabTileMap))]
 public class PrefabTileMapEditor : Editor
 {
@@ -105,59 +97,13 @@ public class PrefabTileMapEditor : Editor
         }
 
     }
-    //private XmlDocument GetXml()
-    //{
-    //    XmlDocument xml = new XmlDocument();
-    //    xml.AppendChild(xml.CreateXmlDeclaration("1.0", "utf-8", "yes"));
-    //    XmlElement root = xml.CreateElement("prefabTileMap");
-    //    {
-    //        var mapSetting = xml.CreateElement("mapSetting");
-    //        root.AppendChild(mapSetting);
-    //        var mapSize = xml.CreateElement("mapSize");
-    //        mapSetting.AppendChild(mapSize);
-    //        mapSize.SetAttribute("width", map.width.ToString());
-    //        mapSize.SetAttribute("length", map.length.ToString());
-    //        var tileSize = xml.CreateElement("tileSize");
-    //        mapSetting.AppendChild(tileSize);
-    //        tileSize.SetAttribute("x", map.tileSize.x.ToString());
-    //        tileSize.SetAttribute("y", map.tileSize.y.ToString());
-    //        tileSize.SetAttribute("z", map.tileSize.z.ToString());
-    //        var brushList = xml.CreateElement("brushList");
-    //        mapSetting.AppendChild(brushList);
-    //        brushList.SetAttribute("count", map.brushList.Count.ToString());
-    //        for (int i = 0; i < map.brushList.Count; i++)
-    //        {
-    //            xml.CreateElement("brush_" + i);
-    //        }
-    //        map.brushList[0].GetInstanceID();
-    //    }
-    //    xml.AppendChild(root);
-    //    {//游戏对象引用
-    //        var objMap = xml.CreateElement("objMap");
-    //        root.AppendChild(objMap);
-    //        objMap.SetAttribute("count", map.objMap.Length.ToString());
-    //        for (int i = 0; i < map.objMap.Length; i++)
-    //        {
-    //            var objList = xml.CreateElement("objList_" + i);
-    //            objMap.AppendChild(objList);
-    //            objList.SetAttribute("count", map.objMap[i].Count.ToString());
-    //            for (int j = 0; j < map.objMap[i].Count; j++)
-    //            {
-    //                var objId = xml.CreateElement("objId_" + j);
-    //                objList.AppendChild(objId);
-    //                if (map.objMap[i][j] != null)
-    //                {
-    //                    objId.InnerText = map.objMap[i][j].name;
-    //                }
-    //                else
-    //                {
-    //                    objId.InnerText = "";
-    //                }
-    //            }
-    //        }
-    //    }
-    //    return xml;
-    //}
+    [MenuItem("GameObject/PrefabTileMap/Create TileMap", priority = 0)]
+    public static void CreateMap()
+    {
+        var obj = new GameObject();
+        obj.name = "TileMap";
+        obj.AddComponent<PrefabTileMap>();
+    }
     private PrefabTileMapData GetData()
     {
         var data = new PrefabTileMapData()
@@ -166,7 +112,7 @@ public class PrefabTileMapEditor : Editor
             tileSize=map.tileSize,
             width =map.width,
             length = map.length,
-            brushList=new List<int>(),
+            brushList=new List<string>(),
             map=map.map,
             mapHeight=map.mapHeight,
             objMap=new List<List<string>>(),
@@ -174,7 +120,7 @@ public class PrefabTileMapEditor : Editor
         };
         for (int i = 0; i < map.brushList.Count; i++)
         {
-            data.brushList.Add(map.brushList[i].GetInstanceID());
+            data.brushList.Add(AssetDatabase.GetAssetPath(map.brushList[i].GetInstanceID()));
         }
         for (int i = 0; i < map.objMap.Length; i++)
         {
@@ -241,7 +187,7 @@ public class PrefabTileMapEditor : Editor
         map.brushList.Clear();
         foreach (var b in data.brushList)
         {
-            map.brushList.Add( EditorUtility.InstanceIDToObject(b)as PrefabTile);
+            map.brushList.Add( AssetDatabase.LoadAssetAtPath<PrefabTile>(b)  );
         }
        
         
@@ -477,17 +423,17 @@ public class PrefabTileMapEditor : Editor
         tileBrushListGUI = new GUIContent[map.brushList.Count];
         for (int i = 0; i < map.brushList.Count; i++)
         {
-            tileBrushListGUI[i] = new GUIContent(GetIcon(map.brushList[i]), map.brushList[i].name);
+            tileBrushListGUI[i] = new GUIContent(map.brushList[i].GetIcon(), map.brushList[i].name);
         }
     }
-    private Texture2D GetIcon(PrefabTile tile)
-    {
-        if (tile.icon == null)
-        {
-            tile.icon = AssetPreview.GetAssetPreview(tile.prefab);
-        }
-        return tile.icon;
-    }
+    //private Texture2D GetIcon(PrefabTile tile)
+    //{
+    //    if (tile.icon == null)
+    //    {
+    //        tile.icon = AssetPreview.GetAssetPreview(tile.prefab);
+    //    }
+    //    return tile.icon;
+    //}
     private void HeightEditor()
     {
         map.heightBrushIndex = GUILayout.Toolbar(map.heightBrushIndex, heightBrushListGUI, GUILayout.Height(64));

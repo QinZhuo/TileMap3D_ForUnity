@@ -7,7 +7,7 @@ public class PrefabTile : ScriptableObject
 {
     public GameObject prefab;
     public bool autoChange;
-    public Texture2D icon;
+    private Texture2D icon;
     public GameObject[] changeTile;
     public bool IsValid
     {
@@ -16,4 +16,14 @@ public class PrefabTile : ScriptableObject
             return prefab != null;
         }
     }
+#if UNITY_EDITOR
+    public Texture2D GetIcon()
+    {
+        if (icon == null)
+        {
+             icon=UnityEditor.AssetPreview.GetAssetPreview(prefab);
+        }
+        return icon;
+    }
+#endif
 }
