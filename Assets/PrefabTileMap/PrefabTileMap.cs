@@ -111,7 +111,7 @@ public class PrefabTileMap : MonoBehaviour
     }
     public void ChangeBrush(PrefabTile newBrush)
     {
-        Debug.LogError(tileBrushIndex + " " + brushList.Count);
+     //   Debug.LogError(tileBrushIndex + " " + brushList.Count);
         brushList.RemoveAt(tileBrushIndex);
         brushList.Insert(tileBrushIndex,newBrush);
         for (int i = 0; i < tileObjMap.Length; i++)
@@ -462,11 +462,18 @@ public class PrefabTileMap : MonoBehaviour
         {
             Debug.LogError("不存在的Tile笔刷 " + index);
         }
-        
-        var tile = Instantiate(brushList[index].prefab, GetPosition(pos,height), 
+        GameObject tile = null;
+        if(brushList[index]==null|| brushList[index].prefab == null)
+        {
+
+        }
+        else
+        {
+            tile = Instantiate(brushList[index].prefab, GetPosition(pos, height),
             Quaternion.Euler(0, mapRotation[pos] * 90, 0), transform);
-        tile.name = "tile_" + pos + "_" + height;
-        tile.hideFlags = HideFlags.HideInHierarchy;
+            tile.name = "tile_" + pos + "_" + height;
+            tile.hideFlags = HideFlags.HideInHierarchy;
+        }
         return tile;
     }
     public GameObject CreatePrefab(int pos,int index)
@@ -504,7 +511,10 @@ public class PrefabTileMap : MonoBehaviour
                 Quaternion rotation = Quaternion.Euler(0, mapRotation[pos]*90, 0);
                 for (int i = 0; i < tileObjMap[pos].Count; i++)
                 {
-                    tileObjMap[pos][i].gameObject.transform.rotation = rotation;
+                    if (tileObjMap[pos][i] != null)
+                    {
+                        tileObjMap[pos][i].transform.rotation = rotation;
+                    }
                 }
             }
             if (!ignoreChangedList)

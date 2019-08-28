@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 105854189e4559148b7f5b42d75bfaf0, type: 3}
   m_Name: newTile
   m_EditorClassIdentifier: 
-  prefab: {fileID: 748702551585707387, guid: 413d1efcdfebd994da9ae83a109e1b9a, type: 3}
+  prefab: {fileID: 1448379834126869594, guid: 93e56c482c2ed44438db1cdfd13c5eed, type: 3}
   autoChange: 0
   changeTile: []
