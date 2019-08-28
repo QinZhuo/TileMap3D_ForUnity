@@ -443,6 +443,7 @@ public class PrefabTileMapEditor : Editor
             if(EditorUtility.DisplayDialog("确定更改么", "更改地图大小会丢失多余数据", "更改", "取消"))
             {
                 map.ResetMap(tWidth, tHeight);
+                CheckCollider(editorMode);
             }
         }
         GUILayout.EndHorizontal();
@@ -454,6 +455,7 @@ public class PrefabTileMapEditor : Editor
             {
                 map.tileSize = tTileSize;
                 map.ResetMap(map.width, map.length);
+                CheckCollider(editorMode);
 
             }
         }
