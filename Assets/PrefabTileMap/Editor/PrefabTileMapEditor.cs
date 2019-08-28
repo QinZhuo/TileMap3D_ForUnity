@@ -141,7 +141,15 @@ public class PrefabTileMapEditor : Editor
         };
         for (int i = 0; i < map.brushList.Count; i++)
         {
-            data.tileBrushList.Add(AssetDatabase.GetAssetPath(map.brushList[i].GetInstanceID()));
+            if (map.brushList[i] != null)
+            {
+                data.tileBrushList.Add(AssetDatabase.GetAssetPath(map.brushList[i].GetInstanceID()));
+            }
+            else
+            {
+                data.tileBrushList.Add("");
+            }
+            
         }
         for (int i = 0; i < map.tileObjMap.Length; i++)
         {
