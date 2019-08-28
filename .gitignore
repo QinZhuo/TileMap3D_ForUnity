@@ -1,2 +1,8 @@
 /.vs
 /Temp
+/obj
+/Assembly-CSharp.csproj
+/Assembly-CSharp-Editor.csproj
+/TileMap3D_ForUnity.sln
+/Unity_3DTileMap.sln
+/Logs

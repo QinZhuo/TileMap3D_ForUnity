@@ -14,5 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 748702551585707387, guid: 413d1efcdfebd994da9ae83a109e1b9a, type: 3}
   autoChange: 0
-  icon: {fileID: 2800000, guid: 8ad5ec240116f8d4cba3f774b4128445, type: 3}
   changeTile: []
