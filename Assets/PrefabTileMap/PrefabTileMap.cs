@@ -79,12 +79,22 @@ public class PrefabTileMap : MonoBehaviour
     public int heightBrushIndex=0;
     public bool is2D=false;
     
-
+    public int this[int x,int y]
+    {
+        get
+        {
+            return map[Index(x, y)];
+        }
+    }
     List<int> changedList = new List<int>();
     public bool AddBrush(PrefabTile newBrush)
     {
         if (brushList.Count < 50)
         {
+            if (brushList.Contains(newBrush))
+            {
+                return false;
+            }
             brushList.Add(newBrush);
             tileBrushIndex = brushList.Count-1;
             return true;
@@ -99,9 +109,17 @@ public class PrefabTileMap : MonoBehaviour
     {
         if (prefabBrushList.Count < 50)
         {
-            prefabBrushList.Add(prefab);
-            prefabBrushIndex = prefabBrushList.Count - 1;
-            return true;
+            if (!prefabBrushList.Contains(prefab))
+            {
+                prefabBrushList.Add(prefab);
+                prefabBrushIndex = prefabBrushList.Count - 1;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+           
         }
         else
         {
@@ -245,6 +263,11 @@ public class PrefabTileMap : MonoBehaviour
         prefabObjMap = null;
         InitMap();
         ClearHistory();
+    }
+    public int[] GetPos(Vector3 pos)
+    {
+        var index= Index(pos);
+        return new int[] { (int)(index % width ), (int)(index / width ) };
     }
     public int Index(Vector3 pos)
     {
@@ -485,7 +508,7 @@ public class PrefabTileMap : MonoBehaviour
         var prefab = Instantiate(prefabBrushList[index], GetPosition(pos, mapHeight[pos] + 1),
             Quaternion.identity,transform);
         prefab.name = "prefab_" + pos;
-        prefab.hideFlags = HideFlags.HideInHierarchy;
+        //prefab.hideFlags = HideFlags.HideInHierarchy;
         return prefab;
     }
     public MapChange Rotate(int pos,int roteScale=1,bool addHistory=true,bool ignoreChangedList=false)
@@ -651,8 +674,5 @@ public class PrefabTileMap : MonoBehaviour
         }
         ChangeOver();
     }
-    private void OnDestroy()
-    {
-        Debug.LogError("地图被删除");
-    }
+   
 }

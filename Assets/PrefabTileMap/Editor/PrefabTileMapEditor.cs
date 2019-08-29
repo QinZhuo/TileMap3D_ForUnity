@@ -94,7 +94,7 @@ public class PrefabTileMapEditor : Editor
         var data = GetData();
         var xml = FileManager.Serialize(data);
         var path= FileManager.SaveSelectPath(xml, "保存地形数据","map","xml",map.savePath==""?"Assets":map.savePath);
-        if (System.IO.File.Exists(path))
+        if (path!=null&&path!="")
         {
             map.savePath = path;
         }
@@ -143,7 +143,12 @@ public class PrefabTileMapEditor : Editor
         {
             if (map.brushList[i] != null)
             {
-                data.tileBrushList.Add(AssetDatabase.GetAssetPath(map.brushList[i].GetInstanceID()));
+                var path = AssetDatabase.GetAssetPath(map.brushList[i].GetInstanceID());
+                if (!data.tileBrushList.Contains(path))
+                {
+                    data.tileBrushList.Add(AssetDatabase.GetAssetPath(map.brushList[i].GetInstanceID()));
+                }
+               
             }
             else
             {
@@ -168,15 +173,48 @@ public class PrefabTileMapEditor : Editor
         }
         for (int i = 0; i < map.prefabBrushList.Count; i++)
         {
-            data.prefabBrushList.Add(AssetDatabase.GetAssetPath(map.prefabBrushList[i]));
+            
+            if (map.prefabBrushList[i] != null)
+            {
+
+                var path = AssetDatabase.GetAssetPath(map.prefabBrushList[i]);
+                if (!Contains(data.prefabBrushList,path))
+                {
+                    data.prefabBrushList.Add(path);
+                }
+            }
+            else
+            {
+                data.prefabBrushList.Add("");
+            }
         }
         return data;
+    }
+    bool Contains(List<string> list, string str)
+    {
+        foreach (var item in list)
+        {
+            if (item == str)
+            {
+                return true;
+            }
+        }
+        return false;
     }
     private void AutoSave()
     {
         var xml = FileManager.Serialize(GetData());
-        var path = autoSavePath + "/" + map.GetInstanceID() + "_MapAutoSave.xml";
-        map.savePath = FileManager.Save(map.savePath == "" ? path : map.savePath, xml);
+        var path = map.savePath;
+        if (path == "")
+        {
+            path = autoSavePath + "/" + map.GetInstanceID() + "_MapAutoSave.xml";
+        }
+        path = FileManager.Save(map.savePath == "" ? path : map.savePath, xml);
+        if (path != "")
+        {
+            map.savePath = path;
+        }
+        Debug.Log("自动保存地图成功" + path);
     }
 
     private void LoadObjMap()
@@ -230,10 +268,12 @@ public class PrefabTileMapEditor : Editor
         var data = FileManager.Deserialize<PrefabTileMapData>(xml);
         map.ResetMap(data.mapWidth, data.mapLength);
         map.brushList.Clear();
+        map.prefabBrushList.Clear();
         foreach (var b in data.tileBrushList)
         {
             map.brushList.Add(AssetDatabase.LoadAssetAtPath<PrefabTile>(b));
         }
+        
         foreach (var b in data.prefabBrushList)
         {
             map.prefabBrushList.Add(AssetDatabase.LoadAssetAtPath<GameObject>(b));
